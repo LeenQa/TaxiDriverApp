@@ -1,10 +1,9 @@
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from rest_framework.authtoken.models import Token
-
 import Taxi_Service_App
 
 
@@ -44,6 +43,9 @@ class Request(models.Model):
     duration = models.DurationField()
     driver = models.OneToOneField(Driver, on_delete=models.CASCADE)
     client = models.ForeignKey(Taxi_Service_App.settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f"requested by: {self.client}"
 
 
 class WorkHours(models.Model):

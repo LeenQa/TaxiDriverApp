@@ -1,16 +1,33 @@
+from django.core.validators import RegexValidator
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
-
 from taxi_app.models import *
 from django.contrib.auth.models import Group
+import re
 
 
 class TaxiUserSerializer(serializers.ModelSerializer):
     confirm_password = serializers.CharField(style={"input_type": "password"}, write_only=True)
-    email = serializers.EmailField(
-        required=True,
-        validators=[UniqueValidator(queryset=User.objects.all())]
-    )
+
+    def validate_password(self, value):
+        r = re.compile(r'(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=])(?=\S+$).{8,30}')
+        if r.match(value) is None:
+            raise serializers.ValidationError(
+                "password must contain upper and lower case letters, numbers and special characters.")
+        return value
+
+    def validate_email(self, value):
+        r = re.compile(r'^(.+)@(.+)$')
+        if r.match(value) is None:
+            raise serializers.ValidationError(
+                "Make sure to write a valid email.")
+        return value
+
+    def validate_user_type(self, value):
+        if not value == 'client' and not value == 'admin':
+            raise serializers.ValidationError(
+                "The value for user type can only be client, driver or admin")
+            return value
 
     class Meta:
         model = TaxiUser
@@ -52,6 +69,12 @@ class TaxiUserSerializer(serializers.ModelSerializer):
 
 
 class DriverSerializer(serializers.ModelSerializer):
+    def validate_work_status(self, value):
+        if not value == 'seeking' and not value == 'inactive' and not value == 'in transit':
+            raise serializers.ValidationError(
+                "The value for user type can only be seeking, inactive or in transit")
+            return value
+
     class Meta:
         model = Driver
         fields = ['user',

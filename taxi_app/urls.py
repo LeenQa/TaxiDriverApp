@@ -10,7 +10,7 @@ router = DefaultRouter()
 router.register(r'drivers', views.DriverViewSet)
 router.register(r'taxi-users', views.TaxiUserViewSet)
 router.register(r'taxis', views.TaxiViewSet)
-router.register(r'requests', views.RequestUserViewSet)
+router.register(r'requests', views.RequestViewSet)
 router.register(r'work-hours', views.WorkHoursViewSet)
 
 

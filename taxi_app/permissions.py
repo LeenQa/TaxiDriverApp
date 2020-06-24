@@ -1,5 +1,4 @@
 from rest_framework import permissions
-from .models import User
 
 
 # a permission to restrict the creation of a request for clients only
