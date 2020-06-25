@@ -23,17 +23,13 @@ class TaxiUserSerializer(serializers.ModelSerializer):
                 "Make sure to write a valid email.")
         return value
 
-    def validate_user_type(self, value):
-        if not value == 'client' and not value == 'admin':
-            raise serializers.ValidationError(
-                "The value for user type can only be client, driver or admin")
-            return value
-
     class Meta:
         model = TaxiUser
         fields = ['username',
                   'password',
                   'confirm_password',
+                  'first_name',
+                  'last_name',
                   'email',
                   'phone',
                   'address',
@@ -51,6 +47,8 @@ class TaxiUserSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError({"password": "passwords must match."})
         else:
             user = TaxiUser(
+                first_name=self.validated_data['first_name'],
+                last_name=self.validated_data['last_name'],
                 email=self.validated_data['email'],
                 username=self.validated_data['username'],
                 phone=self.validated_data['phone'],
@@ -69,12 +67,6 @@ class TaxiUserSerializer(serializers.ModelSerializer):
 
 
 class DriverSerializer(serializers.ModelSerializer):
-    def validate_work_status(self, value):
-        if not value == 'seeking' and not value == 'inactive' and not value == 'in transit':
-            raise serializers.ValidationError(
-                "The value for user type can only be seeking, inactive or in transit")
-            return value
-
     class Meta:
         model = Driver
         fields = ['user',
@@ -103,7 +95,8 @@ class TaxiSerializer(serializers.ModelSerializer):
 class RequestSerializer(serializers.ModelSerializer):
     class Meta:
         model = Request
-        fields = ['duration',
+        fields = ['id',
+                  'duration',
                   'request_status',
                   'client',
                   'driver']

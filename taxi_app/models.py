@@ -11,10 +11,13 @@ class TaxiUser(AbstractUser):
     TYPE = (
         ('admin', 'admin'),
         ('client', 'client'),
+        ('driver', 'driver'),
     )
     phone = models.IntegerField(null=True, blank=True)
     address = models.CharField(max_length=50, null=True, blank=True)
     user_type = models.CharField(max_length=50, choices=TYPE, default='client')
+    first_name = models.CharField(max_length=30, blank=True)
+    last_name = models.CharField(max_length=150, blank=True)
 
 
 class Driver(models.Model):
@@ -39,9 +42,9 @@ class Request(models.Model):
         ('accepted', 'accepted'),
         ('complete', 'complete')
     )
-    request_status = models.CharField(max_length=50, choices=STATUS)
-    duration = models.DurationField()
-    driver = models.OneToOneField(Driver, on_delete=models.CASCADE)
+    request_status = models.CharField(max_length=50, choices=STATUS, default='new')
+    duration = models.DurationField(null=True)
+    driver = models.OneToOneField(Driver, on_delete=models.CASCADE, null=True)
     client = models.ForeignKey(Taxi_Service_App.settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
 
     def __str__(self):
