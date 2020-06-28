@@ -1,5 +1,5 @@
 from rest_framework import permissions
-
+from .models import *
 
 # # a permission to restrict the creation of a request for clients only
 # class CreateRequest(permissions.BasePermission):
@@ -70,6 +70,7 @@ from rest_framework import permissions
 #     #             self.permission_denied(
 #     #                 request, message=getattr(permission, 'Only admin is able to view the drivers work hours', None)
 #     #             )
+from taxi_app.models import TaxiUser
 
 
 class IsAdmin(permissions.BasePermission):
@@ -97,4 +98,9 @@ class IsLoggedUser(permissions.BasePermission):
     message = "Only update/delete records you created"
 
     def has_object_permission(self, request, view, obj):
-        return request.user == obj.driver
+        if isinstance(obj, TaxiUser):
+            return request.user.id == obj.id
+        elif isinstance(obj, Request):
+            return request.user == obj.driver or request.user == obj.client
+        elif isinstance(obj,Driver):
+            return request.user == obj.user

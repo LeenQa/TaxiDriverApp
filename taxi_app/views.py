@@ -1,13 +1,17 @@
 from django.shortcuts import render
-from rest_framework import viewsets
+from rest_framework import viewsets, status
 from rest_framework.authentication import TokenAuthentication
+from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated, DjangoModelPermissions
-
 from . import customviewset
 from .permissions import *
 from .serializers import *
-#from django.contrib.auth import get_user_model
-#TaxiUser = get_user_model()
+from datetime import datetime, timezone
+from rest_framework.response import Response
+
+
+# from django.contrib.auth import get_user_model
+# TaxiUser = get_user_model()
 
 class TaxiUserViewSet(viewsets.ModelViewSet):
     queryset = TaxiUser.objects.all()
@@ -41,8 +45,47 @@ class RequestViewSet(customviewset.CustomViewSet):
         elif self.action == 'retrieve' or self.action == 'update' or self.action == 'partial_update':
             permission_classes = [IsDriver]
         elif self.action == 'destroy':
-            permission_classes = [IsAdmin]
+            permission_classes = [IsClient, IsLoggedUser]
         return [permission() for permission in permission_classes]
+
+    def update(self, request, *args, **kwargs):
+        req = self.get_object()
+        serializer = RequestSerializer(data=request.data)
+        if serializer.is_valid():
+            curr_status = req.request_status
+            next_status = serializer.validated_data['request_status']
+            if curr_status == 'new' and next_status == 'accepted':
+                req.start_time = datetime.now(timezone.utc)
+            elif curr_status == 'accepted' and next_status == 'complete':
+                req.end_time = datetime.now(timezone.utc)
+                duration = req.end_time - req.start_time
+                req.duration = duration
+            req.request_status = next_status
+            req.driver = serializer.validated_data['driver']
+            req.save()
+            return Response({'status': f'request has been changed from {curr_status} to {next_status}'})
+
+        else:
+            return Response({'status': 'serializer not valid'})
+
+
+def partial_update(self, request, pk=None):
+    req = self.get_object()
+    serializer = RequestSerializer(data=request.data, partial=True)
+    if serializer.is_valid():
+        curr_status = req.request_status
+        next_status = serializer.data['request_status']
+        if curr_status == 'accepted' and next_status == 'complete':
+            req.end_time = datetime.now(timezone.utc)
+            duration = req.end_time - req.start_time
+            req.duration = duration
+            req.save()
+            return Response({'status': f'request duration has been recorded'})
+        else:
+            serializer.save()
+            return Response({'status': f'request updated'})
+    else:
+        return Response({'status': 'serializer not valid'})
 
 
 class DriverViewSet(viewsets.ModelViewSet):
@@ -57,10 +100,41 @@ class DriverViewSet(viewsets.ModelViewSet):
         elif self.action == 'list':
             permission_classes = [IsAdmin]
         elif self.action == 'retrieve' or self.action == 'update' or self.action == 'partial_update':
-            permission_classes = [IsAdmin]
+            permission_classes = [IsDriver, IsLoggedUser]
         elif self.action == 'destroy':
             permission_classes = [IsAdmin]
         return [permission() for permission in permission_classes]
+
+    def partial_update(self, request, pk=None):
+        driver = self.get_object()
+        serializer = DriverSerializer(data=request.data, partial=True)
+        if serializer.is_valid():
+            next_status = serializer.data['work_status']
+            curr_status = driver.work_status
+            work_hours_today = WorkHours.objects.filter(start_time__year=datetime.now().year,
+                                                        start_time__month=datetime.now().month,
+                                                        start_time__day=datetime.now().day)
+            if curr_status == 'inactive' and next_status == 'seeking':
+                if not work_hours_today.get(driver=driver):
+                    WorkHours.objects.create(start_time=datetime.now(timezone.utc), driver=driver)
+                driver.work_status = next_status
+                driver.save()
+                return Response({'status': f'work status updated from {curr_status} to {next_status}'})
+            elif (curr_status == 'seeking' or curr_status == 'in transit') and next_status == 'inactive':
+                session = work_hours_today.get(driver=driver)
+                session.end_time = datetime.now(timezone.utc)
+                hours = session.end_time - session.start_time
+                session.hours = hours
+                session.save()
+                driver.work_status = next_status
+                driver.save()
+                return Response({'status': f'session updated from {curr_status} to {next_status}'})
+            else:
+                driver.work_status = next_status
+                driver.save()
+                return Response({'status': f'work status updated from {curr_status} to {next_status}'})
+        else:
+            return Response({'status': 'serializer not valid'})
 
 
 class TaxiViewSet(viewsets.ModelViewSet):

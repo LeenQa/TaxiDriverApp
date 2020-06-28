@@ -5,8 +5,8 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from rest_framework.authtoken.models import Token
 import Taxi_Service_App
-
-
+from datetime import datetime
+from django.utils import timezone
 class TaxiUser(AbstractUser):
     TYPE = (
         ('admin', 'admin'),
@@ -44,8 +44,10 @@ class Request(models.Model):
     )
     request_status = models.CharField(max_length=50, choices=STATUS, default='new')
     duration = models.DurationField(null=True)
-    driver = models.OneToOneField(Driver, on_delete=models.CASCADE, null=True)
+    driver = models.ForeignKey(Driver, on_delete=models.CASCADE,null=True)
     client = models.ForeignKey(Taxi_Service_App.settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    start_time = models.DateTimeField(null=True)
+    end_time = models.DateTimeField(null=True)
 
     def __str__(self):
         return f"requested by: {self.client}"
@@ -55,7 +57,7 @@ class WorkHours(models.Model):
     start_time = models.DateTimeField()
     end_time = models.DateTimeField()
     hours = models.DurationField()
-    driver = models.OneToOneField(Driver, on_delete=models.CASCADE)
+    driver = models.ForeignKey(Driver, on_delete=models.CASCADE)
 
 
 @receiver(post_save, sender=Taxi_Service_App.settings.AUTH_USER_MODEL)

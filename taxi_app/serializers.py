@@ -4,7 +4,7 @@ from rest_framework.validators import UniqueValidator
 from taxi_app.models import *
 from django.contrib.auth.models import Group
 import re
-
+from datetime import datetime, timezone
 
 class TaxiUserSerializer(serializers.ModelSerializer):
     confirm_password = serializers.CharField(style={"input_type": "password"}, write_only=True)
@@ -38,29 +38,15 @@ class TaxiUserSerializer(serializers.ModelSerializer):
             "password": {"write_only": True}
         }
 
-    def save(self):
-
+    def create(self, validated_data):
         password = self.validated_data['password']
         confirm_password = self.validated_data['confirm_password']
         if password != confirm_password:
-            print("passwords don't match.")
+
             raise serializers.ValidationError({"password": "passwords must match."})
         else:
-            user = TaxiUser(
-                first_name=self.validated_data['first_name'],
-                last_name=self.validated_data['last_name'],
-                email=self.validated_data['email'],
-                username=self.validated_data['username'],
-                phone=self.validated_data['phone'],
-                address=self.validated_data['address'],
-                user_type=self.validated_data['user_type'],
-            )
-            if self.validated_data['user_type'] == 'client':
-                group = Group.objects.get(name='ClientGroup')
-                group.user_set.add(user)
-            elif self.validated_data['user_type'] == 'admin':
-                group = Group.objects.get(name='AdminGroup')
-                group.user_set.add(user)
+            validated_data.pop('confirm_password')
+            user = super(TaxiUserSerializer, self).create(validated_data)
             user.set_password(password)
             user.save()
             return user
@@ -72,17 +58,6 @@ class DriverSerializer(serializers.ModelSerializer):
         fields = ['user',
                   'work_status']
 
-    def save(self):
-        driver = Driver(
-            work_status=self.validated_data['work_status'],
-            user=self.validated_data['user'],
-        )
-        group = Group.objects.get(name='DriverGroup')
-        group.user_set.add(driver)
-
-        driver.save()
-        return driver
-
 
 class TaxiSerializer(serializers.ModelSerializer):
     class Meta:
@@ -93,16 +68,23 @@ class TaxiSerializer(serializers.ModelSerializer):
 
 
 class RequestSerializer(serializers.ModelSerializer):
+    start_time = serializers.DateTimeField(format="%Y-%m-%dT%H:%M:%S", required=False)
+    end_time = serializers.DateTimeField(format="%Y-%m-%dT%H:%M:%S", required=False)
     class Meta:
         model = Request
         fields = ['id',
                   'duration',
+                  'start_time',
+                  'end_time',
                   'request_status',
                   'client',
                   'driver']
 
 
 class WorkHoursSerializer(serializers.ModelSerializer):
+    start_time = serializers.DateTimeField(format="%Y-%m-%dT%H:%M:%S", required=True)
+    end_time = serializers.DateTimeField(format="%Y-%m-%dT%H:%M:%S", required=True)
+
     class Meta:
         model = WorkHours
         fields = ['start_time',
