@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from taxi_app.models import *
 import re
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 
 
 class TaxiUserSerializer(serializers.ModelSerializer):
@@ -51,8 +51,8 @@ class TaxiUserSerializer(serializers.ModelSerializer):
                     {'status': 'You do not have the permission to add this type of users'})
             else:
                 validated_data.pop('confirm_password')
-                user = super(TaxiUserSerializer, self).create(validated_data)
-                user.is_valid(raise_exception=True)
+                user = TaxiUser.create_tac
+                #user.is_valid(raise_exception=True)
                 user.set_password(password)
                 user.save()
                 return user
@@ -65,13 +65,6 @@ class DriverSerializer(serializers.ModelSerializer):
         model = Driver
         fields = ['user',
                   'work_status']
-
-    def save_session(work_hours_today, driver):
-        session = work_hours_today.get(driver=driver)
-        session.end_time = datetime.now(timezone.utc)
-        hours = session.end_time - session.start_time
-        session.duration = hours
-        session.save()
 
 
 class TaxiSerializer(serializers.ModelSerializer):
@@ -107,3 +100,13 @@ class WorkHoursSerializer(serializers.ModelSerializer):
                   'end_time',
                   'duration',
                   'driver']
+
+    def save_session(work_hours_today, driver):
+        session = work_hours_today.get(driver=driver)
+        session.end_time = datetime.now(timezone.utc)
+        hours = session.end_time - session.start_time
+        seconds_in_day = 24 * 60 * 60
+        timedelta(0, 8, 562000)
+        divmod(hours.days * seconds_in_day + hours.seconds, 60)
+        session.duration = hours
+        session.save()
