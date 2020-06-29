@@ -1,17 +1,23 @@
-from django.shortcuts import render
-from rest_framework import viewsets, status
+from rest_framework import viewsets
 from rest_framework.authentication import TokenAuthentication
-from rest_framework.decorators import action
-from rest_framework.permissions import IsAuthenticated, DjangoModelPermissions
-from . import customviewset
 from .permissions import *
 from .serializers import *
 from datetime import datetime, timezone
 from rest_framework.response import Response
 
 
-# from django.contrib.auth import get_user_model
-# TaxiUser = get_user_model()
+def get_permissions_all(self):
+    permission_classes = []
+    if self.action == 'create':
+        permission_classes = [IsAdmin]
+    elif self.action == 'list':
+        permission_classes = [IsAdmin]
+    elif self.action == 'retrieve' or self.action == 'update' or self.action == 'partial_update':
+        permission_classes = [IsAdmin]
+    elif self.action == 'destroy':
+        permission_classes = [IsAdmin]
+    return permission_classes
+
 
 class TaxiUserViewSet(viewsets.ModelViewSet):
     queryset = TaxiUser.objects.all()
@@ -19,19 +25,15 @@ class TaxiUserViewSet(viewsets.ModelViewSet):
     authentication_classes = (TokenAuthentication,)
 
     def get_permissions(self):
-        permission_classes = []
+        permission_classes = get_permissions_all(self)
         if self.action == 'create':
             permission_classes = [permissions.AllowAny]
-        elif self.action == 'list':
-            permission_classes = [IsAdmin]
         elif self.action == 'retrieve' or self.action == 'update' or self.action == 'partial_update':
             permission_classes = [IsLoggedUser]
-        elif self.action == 'destroy':
-            permission_classes = [IsAdmin]
         return [permission() for permission in permission_classes]
 
 
-class RequestViewSet(customviewset.CustomViewSet):
+class RequestViewSet(viewsets.ModelViewSet):
     queryset = Request.objects.all()
     serializer_class = RequestSerializer
     authentication_classes = (TokenAuthentication,)
@@ -41,7 +43,7 @@ class RequestViewSet(customviewset.CustomViewSet):
         if self.action == 'create':
             permission_classes = [IsClient]
         elif self.action == 'list':
-            permission_classes = [IsDriver]
+            permission_classes = [ListRequests]
         elif self.action == 'retrieve' or self.action == 'update' or self.action == 'partial_update':
             permission_classes = [IsDriver]
         elif self.action == 'destroy':
@@ -69,70 +71,34 @@ class RequestViewSet(customviewset.CustomViewSet):
             return Response({'status': 'serializer not valid'})
 
 
-def partial_update(self, request, pk=None):
-    req = self.get_object()
-    serializer = RequestSerializer(data=request.data, partial=True)
-    if serializer.is_valid():
-        curr_status = req.request_status
-        next_status = serializer.data['request_status']
-        if curr_status == 'accepted' and next_status == 'complete':
-            req.end_time = datetime.now(timezone.utc)
-            duration = req.end_time - req.start_time
-            req.duration = duration
-            req.save()
-            return Response({'status': f'request duration has been recorded'})
-        else:
-            serializer.save()
-            return Response({'status': f'request updated'})
-    else:
-        return Response({'status': 'serializer not valid'})
-
-
 class DriverViewSet(viewsets.ModelViewSet):
     queryset = Driver.objects.all()
     serializer_class = DriverSerializer
     authentication_classes = (TokenAuthentication,)
 
     def get_permissions(self):
-        permission_classes = []
-        if self.action == 'create':
-            permission_classes = [IsAdmin]
-        elif self.action == 'list':
-            permission_classes = [IsAdmin]
-        elif self.action == 'retrieve' or self.action == 'update' or self.action == 'partial_update':
+        permission_classes = get_permissions_all(self)
+        if self.action == 'retrieve' or self.action == 'update' or self.action == 'partial_update':
             permission_classes = [IsDriver, IsLoggedUser]
-        elif self.action == 'destroy':
-            permission_classes = [IsAdmin]
         return [permission() for permission in permission_classes]
 
-    def partial_update(self, request, pk=None):
+    def put(self, request, pk=None):
         driver = self.get_object()
         serializer = DriverSerializer(data=request.data, partial=True)
         if serializer.is_valid():
             next_status = serializer.data['work_status']
             curr_status = driver.work_status
-            work_hours_today = WorkHours.objects.filter(start_time__year=datetime.now().year,
-                                                        start_time__month=datetime.now().month,
-                                                        start_time__day=datetime.now().day)
             if curr_status == 'inactive' and next_status == 'seeking':
-                if not work_hours_today.get(driver=driver):
                     WorkHours.objects.create(start_time=datetime.now(timezone.utc), driver=driver)
-                driver.work_status = next_status
-                driver.save()
-                return Response({'status': f'work status updated from {curr_status} to {next_status}'})
             elif (curr_status == 'seeking' or curr_status == 'in transit') and next_status == 'inactive':
-                session = work_hours_today.get(driver=driver)
-                session.end_time = datetime.now(timezone.utc)
-                hours = session.end_time - session.start_time
-                session.hours = hours
-                session.save()
-                driver.work_status = next_status
-                driver.save()
-                return Response({'status': f'session updated from {curr_status} to {next_status}'})
-            else:
-                driver.work_status = next_status
-                driver.save()
-                return Response({'status': f'work status updated from {curr_status} to {next_status}'})
+                work_hours_today = WorkHours.objects.filter(start_time__year=datetime.now().year,
+                                                            start_time__month=datetime.now().month,
+                                                            start_time__day=datetime.now().day,
+                                                            driver=driver)
+                DriverSerializer.save_session(work_hours_today, driver)
+            driver.work_status = next_status
+            driver.save()
+            return Response({'status': f'session updated from {curr_status} to {next_status}'})
         else:
             return Response({'status': 'serializer not valid'})
 
@@ -143,15 +109,7 @@ class TaxiViewSet(viewsets.ModelViewSet):
     authentication_classes = (TokenAuthentication,)
 
     def get_permissions(self):
-        permission_classes = []
-        if self.action == 'create':
-            permission_classes = [IsAdmin]
-        elif self.action == 'list':
-            permission_classes = [IsAdmin]
-        elif self.action == 'retrieve' or self.action == 'update' or self.action == 'partial_update':
-            permission_classes = [IsAdmin]
-        elif self.action == 'destroy':
-            permission_classes = [IsAdmin]
+        permission_classes = get_permissions_all(self)
         return [permission() for permission in permission_classes]
 
 
@@ -161,13 +119,5 @@ class WorkHoursViewSet(viewsets.ModelViewSet):
     authentication_classes = (TokenAuthentication,)
 
     def get_permissions(self):
-        permission_classes = []
-        if self.action == 'create':
-            permission_classes = [IsAdmin]
-        elif self.action == 'list':
-            permission_classes = [IsAdmin]
-        elif self.action == 'retrieve' or self.action == 'update' or self.action == 'partial_update':
-            permission_classes = [IsAdmin]
-        elif self.action == 'destroy':
-            permission_classes = [IsAdmin]
+        permission_classes = get_permissions_all(self)
         return [permission() for permission in permission_classes]

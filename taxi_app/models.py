@@ -1,12 +1,11 @@
-from django.contrib.auth import get_user_model
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from rest_framework.authtoken.models import Token
 import Taxi_Service_App
-from datetime import datetime
-from django.utils import timezone
+
+
 class TaxiUser(AbstractUser):
     TYPE = (
         ('admin', 'admin'),
@@ -29,11 +28,17 @@ class Driver(models.Model):
     user = models.ForeignKey(Taxi_Service_App.settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     work_status = models.CharField(max_length=50, choices=STATUS, default='inactive')
 
+    def __str__(self):
+        return f"name: {self.user.username} | status: {self.work_status}"
+
 
 class Taxi(models.Model):
     car_model = models.CharField(max_length=250)
     num_of_passengers = models.IntegerField()
     driver = models.OneToOneField(Driver, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f"taxi {self.id} | driver: {self.driver}"
 
 
 class Request(models.Model):
@@ -44,7 +49,7 @@ class Request(models.Model):
     )
     request_status = models.CharField(max_length=50, choices=STATUS, default='new')
     duration = models.DurationField(null=True)
-    driver = models.ForeignKey(Driver, on_delete=models.CASCADE,null=True)
+    driver = models.ForeignKey(Driver, on_delete=models.CASCADE, null=True)
     client = models.ForeignKey(Taxi_Service_App.settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     start_time = models.DateTimeField(null=True)
     end_time = models.DateTimeField(null=True)
@@ -54,10 +59,13 @@ class Request(models.Model):
 
 
 class WorkHours(models.Model):
-    start_time = models.DateTimeField()
-    end_time = models.DateTimeField()
-    hours = models.DurationField()
+    start_time = models.DateTimeField(null=True)
+    end_time = models.DateTimeField(null=True)
+    duration = models.DurationField(null=True)
     driver = models.ForeignKey(Driver, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f"driver: {self.driver} | start time: {self.start_time} | end time: {self.end_time} | duration: {self.duration}"
 
 
 @receiver(post_save, sender=Taxi_Service_App.settings.AUTH_USER_MODEL)
