@@ -18,6 +18,13 @@ class TaxiUser(AbstractUser):
     first_name = models.CharField(max_length=30, blank=True)
     last_name = models.CharField(max_length=150, blank=True)
 
+    @staticmethod
+    def create_taxi_user(self, **validated_data):
+        user = TaxiUser.objects.create(**validated_data)
+        user.set_password(validated_data['password'])
+        user.save()
+        return user
+
 
 class Driver(models.Model):
     STATUS = (
@@ -25,11 +32,17 @@ class Driver(models.Model):
         ('inactive', 'inactive'),
         ('in transit', 'in transit')
     )
-    user = models.ForeignKey(Taxi_Service_App.settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    user = models.ForeignKey(Taxi_Service_App.settings.AUTH_USER_MODEL, on_delete=models.CASCADE, default=1)
     work_status = models.CharField(max_length=50, choices=STATUS, default='inactive')
 
     def __str__(self):
         return f"name: {self.user.username} | status: {self.work_status}"
+
+    def create_driver(user):
+        driver = Driver()
+        driver.user = user
+        driver.work_status = 'inactive'
+        driver.save()
 
 
 class Taxi(models.Model):
@@ -48,9 +61,9 @@ class Request(models.Model):
         ('complete', 'complete')
     )
     request_status = models.CharField(max_length=50, choices=STATUS, default='new')
-    duration = models.DurationField(null=True)
+    duration = models.IntegerField(null=True)
     driver = models.ForeignKey(Driver, on_delete=models.CASCADE, null=True)
-    client = models.ForeignKey(Taxi_Service_App.settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    client = models.ForeignKey(Taxi_Service_App.settings.AUTH_USER_MODEL, on_delete=models.CASCADE, default=1)
     start_time = models.DateTimeField(null=True)
     end_time = models.DateTimeField(null=True)
 
@@ -61,7 +74,7 @@ class Request(models.Model):
 class WorkHours(models.Model):
     start_time = models.DateTimeField(null=True)
     end_time = models.DateTimeField(null=True)
-    duration = models.DurationField(null=True)
+    duration = models.IntegerField(null=True)
     driver = models.ForeignKey(Driver, on_delete=models.CASCADE)
 
     def __str__(self):

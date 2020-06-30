@@ -2,6 +2,16 @@ from rest_framework import serializers
 from taxi_app.models import *
 import re
 from datetime import datetime, timezone, timedelta
+from rest_framework.response import Response
+
+def get_user(self):
+    user = None
+    request = self.context.get("request")
+    if request and hasattr(request, "user"):
+        user = request.user
+        return user
+    else:
+        return None
 
 
 class TaxiUserSerializer(serializers.ModelSerializer):
@@ -39,22 +49,19 @@ class TaxiUserSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         password = self.validated_data['password']
         confirm_password = self.validated_data['confirm_password']
-        user = None
-        request = self.context.get("request")
+
         if password != confirm_password:
             raise serializers.ValidationError({"password": "passwords must match."})
-        elif request and hasattr(request, "user"):
-            user = request.user
+        elif get_user(self):
             if (self.validated_data['user_type'] == 'admin' or self.validated_data[
-                'user_type'] == 'driver') and not user.user_type == 'admin':
+                'user_type'] == 'driver') and not get_user(self).user_type == 'admin':
                 raise serializers.ValidationError(
                     {'status': 'You do not have the permission to add this type of users'})
             else:
                 validated_data.pop('confirm_password')
-                user = TaxiUser.create_tac
-                #user.is_valid(raise_exception=True)
-                user.set_password(password)
-                user.save()
+                user = TaxiUser.create_taxi_user(self, **validated_data)
+                if self.validated_data['user_type'] == 'driver':
+                    Driver.create_driver(user)
                 return user
         else:
             raise serializers.ValidationError({'status': 'Could not add user.'})
@@ -78,7 +85,6 @@ class TaxiSerializer(serializers.ModelSerializer):
 class RequestSerializer(serializers.ModelSerializer):
     start_time = serializers.DateTimeField(format="%Y-%m-%dT%H:%M", required=False)
     end_time = serializers.DateTimeField(format="%Y-%m-%dT%H:%M", required=False)
-
     class Meta:
         model = Request
         fields = ['id',
@@ -90,9 +96,16 @@ class RequestSerializer(serializers.ModelSerializer):
                   'driver']
 
 
+    def create(self, validated_data):
+        obj = Request.objects.create(**validated_data)
+        obj.client = get_user(self)
+        obj.save()
+        return obj
+
+
 class WorkHoursSerializer(serializers.ModelSerializer):
-    start_time = serializers.DateTimeField(format="%Y-%m-%dT%H:%M", required=False)
-    end_time = serializers.DateTimeField(format="%Y-%m-%dT%H:%M", required=False)
+    start_time = serializers.DateTimeField(format="%d-%m-%Y %H:%M:%S", required=False)
+    end_time = serializers.DateTimeField(format="%d-%m-%Y %H:%M:%S", required=False)
 
     class Meta:
         model = WorkHours
@@ -105,8 +118,6 @@ class WorkHoursSerializer(serializers.ModelSerializer):
         session = work_hours_today.get(driver=driver)
         session.end_time = datetime.now(timezone.utc)
         hours = session.end_time - session.start_time
-        seconds_in_day = 24 * 60 * 60
-        timedelta(0, 8, 562000)
-        divmod(hours.days * seconds_in_day + hours.seconds, 60)
-        session.duration = hours
+        hours = hours.total_seconds()
+        session.duration = hours/60
         session.save()
