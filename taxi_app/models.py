@@ -4,6 +4,7 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from rest_framework.authtoken.models import Token
 import Taxi_Service_App
+from datetime import datetime, timezone
 
 
 class TaxiUser(AbstractUser):
@@ -44,6 +45,30 @@ class Driver(models.Model):
         driver.work_status = 'inactive'
         driver.save()
 
+    def change_status(self, next_status):
+        self.work_status = next_status
+        self.save()
+
+    def change_work_status(self, curr_status, next_status):
+        change = False
+        if curr_status == 'inactive':
+            if next_status == 'seeking':
+                WorkHours.objects.create(start_time=datetime.now(timezone.utc), driver=self)
+                change = True
+        elif curr_status == 'seeking':
+            if next_status == 'inactive':
+                work_hours_today = WorkHours.objects.filter(start_time__year=datetime.now().year,
+                                                            start_time__month=datetime.now().month,
+                                                            start_time__day=datetime.now().day,
+                                                            driver=self, end_time=None)
+                session = work_hours_today.get(driver=self)
+                end_session(session)
+                change = True
+        if change:
+            self.user = self.user
+            self.change_status(next_status)
+        return change
+
 
 class Taxi(models.Model):
     car_model = models.CharField(max_length=250)
@@ -68,7 +93,25 @@ class Request(models.Model):
     end_time = models.DateTimeField(null=True)
 
     def __str__(self):
-        return f"requested by: {self.client}"
+        return f"requested by: {self.client} | status: {self.request_status} | duration: {self.duration} minutes"
+
+    def change_request_status(self, request, curr_status, next_status, driver):
+        change_status = False
+        if curr_status == 'new' and next_status == 'accepted':
+            if driver.work_status == 'seeking':
+                self.start_time = datetime.now(timezone.utc)
+                driver.change_status(next_status='in transit')
+                change_status = True
+        elif curr_status == 'accepted' and next_status == 'complete':
+            end_session(self)
+            change_status = True
+            driver.change_status(next_status='seeking')
+        if change_status:
+            self.request_status = next_status
+            self.client = self.client
+            self.driver = driver
+            self.save()
+        return change_status
 
 
 class WorkHours(models.Model):
@@ -85,3 +128,11 @@ class WorkHours(models.Model):
 def create_token(sender, instance=None, created=False, **kwargs):
     if created:
         Token.objects.create(user=instance)
+
+
+def end_session(obj):
+    obj.end_time = datetime.now(timezone.utc)
+    hours = obj.end_time - obj.start_time
+    hours = hours.total_seconds()
+    obj.duration = hours/60
+    obj.save()

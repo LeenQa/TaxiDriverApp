@@ -1,4 +1,4 @@
-from rest_framework import viewsets
+from rest_framework import viewsets, status
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.decorators import action
 import requests
@@ -6,6 +6,7 @@ from .permissions import *
 from .serializers import *
 from datetime import datetime, timezone
 from rest_framework.response import Response
+from django_filters.rest_framework import DjangoFilterBackend
 
 
 def get_permissions_all(self):
@@ -25,6 +26,8 @@ class TaxiUserViewSet(viewsets.ModelViewSet):
     queryset = TaxiUser.objects.all()
     serializer_class = TaxiUserSerializer
     authentication_classes = (TokenAuthentication,)
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = '__all__'
 
     def get_permissions(self):
         permission_classes = get_permissions_all(self)
@@ -39,6 +42,8 @@ class RequestViewSet(viewsets.ModelViewSet):
     queryset = Request.objects.all()
     serializer_class = RequestSerializer
     authentication_classes = (TokenAuthentication,)
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = '__all__'
 
     def get_permissions(self):
         permission_classes = []
@@ -53,46 +58,44 @@ class RequestViewSet(viewsets.ModelViewSet):
         return [permission() for permission in permission_classes]
 
     def list(self, request, pk=None):
-        request_list = Request.objects.filter(request_status='new')
+        if request.user.user_type == 'driver':
+            request_list = Request.objects.filter(driver=Driver.objects.get(user=request.user))
+        else:
+            request_list = Request.objects.all()
         serializer = self.get_serializer(request_list, many=True)
         result_set = serializer.data
         return Response(result_set)
+
+    def create(self, request, *args, **kwargs):
+        if not (Request.objects.filter(request_status='new', client=request.user) or Request.objects.filter(
+                request_status='accepted', client=request.user)):
+            req = Request.objects.create(client=request.user)
+            serializer = self.get_serializer(req)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            return Response({'status': f'you cannot make multiple requests at the same time'}, status=status.HTTP_401_UNAUTHORIZED)
 
     @action(detail=True, methods=['put'])
     def change_status(self, request, pk=None, name='change request status', permission_classes=[IsDriver]):
         req = self.get_object()
         serializer = RequestSerializer(data=request.data)
-        if serializer.is_valid(raise_exception=True):
-            curr_status = req.request_status
-            next_status = serializer.validated_data['request_status']
-            change_status = False
-            if curr_status == 'new' and next_status == 'accepted':
-                req.start_time = datetime.now(timezone.utc)
-                r = requests.put(f'http://127.0.0.1:8000/taxiapp/drivers/{req.driver.id}/change_status/',
-                                 data={'work_status': 'in transit'})
-                change_status = True
-            elif curr_status == 'accepted' and next_status == 'complete':
-                req.end_time = datetime.now(timezone.utc)
-                duration = req.end_time - req.start_time
-                duration = duration.total_seconds()
-                req.duration = duration / 60
-                change_status = True
-                r = requests.put(f'http://127.0.0.1:8000/taxiapp/drivers/{req.driver.id}/change_status/',
-                                 data={'work_status': 'seeking'})
-            if change_status:
-                req.request_status = next_status
-                req.client = req.client
-                req.driver = Driver.objects.get(user=request.user)
-                req.save()
-                return Response({'status': f'request has been changed from {curr_status} to {next_status}'})
-            else:
-                return Response({'status': f'you cant change to this status'})
+        serializer.is_valid(raise_exception=True)
+        curr_status = req.request_status
+        next_status = serializer.validated_data['request_status']
+        driver = Driver.objects.get(user=request.user)
+        change_status = req.change_request_status(request, curr_status, next_status, driver)
+        if change_status:
+            return Response({'status': f'request has been changed from {curr_status} to {next_status}'})
+        else:
+            return Response({'status': f'you cant change to this status'})
 
 
 class DriverViewSet(viewsets.ModelViewSet):
     queryset = Driver.objects.all()
     serializer_class = DriverSerializer
     authentication_classes = (TokenAuthentication,)
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = '__all__'
 
     def get_permissions(self):
         permission_classes = get_permissions_all(self)
@@ -104,34 +107,14 @@ class DriverViewSet(viewsets.ModelViewSet):
     def change_status(self, request, pk=None, name='change driver status', permission_classes=[IsDriver, IsLoggedUser]):
         driver = self.get_object()
         serializer = DriverSerializer(data=request.data)
-        if serializer.is_valid(raise_exception=True):
-            next_status = serializer.data['work_status']
-            curr_status = driver.work_status
-            change = False
-            if curr_status == 'inactive':
-                if next_status == 'seeking':
-                    WorkHours.objects.create(start_time=datetime.now(timezone.utc), driver=driver)
-                    change = True
-            elif curr_status == 'seeking':
-                if next_status == 'inactive':
-                    work_hours_today = WorkHours.objects.filter(start_time__year=datetime.now().year,
-                                                                start_time__month=datetime.now().month,
-                                                                start_time__day=datetime.now().day,
-                                                                driver=driver, end_time=None)
-                    WorkHoursSerializer.save_session(work_hours_today, driver)
-                    change = True
-                elif next_status == 'in transit':
-                    change = True
-            elif curr_status == 'in transit':
-                if next_status == 'seeking':
-                    change = True
-            if change:
-                driver.user = driver.user
-                driver.work_status = next_status
-                driver.save()
-                return Response({'status': f'session updated from {curr_status} to {next_status}'})
-            else:
-                return Response({'status': f'you cant change to this status'})
+        serializer.is_valid(raise_exception=True)
+        next_status = serializer.validated_data['work_status']
+        curr_status = driver.work_status
+        change = driver.change_work_status(curr_status, next_status)
+        if change:
+            return Response({'status': f'session updated from {curr_status} to {next_status}'})
+        else:
+            return Response({'status': f'you cant change to this status'})
 
     @action(detail=True, methods=['get'])
     def work_hours(self, request, pk=None, name='get work hours', permission_classes=[IsDriver, IsLoggedUser]):
@@ -140,10 +123,13 @@ class DriverViewSet(viewsets.ModelViewSet):
         result_set = serializer.data
         return Response(result_set)
 
+
 class TaxiViewSet(viewsets.ModelViewSet):
     queryset = Taxi.objects.all()
     serializer_class = TaxiSerializer
     authentication_classes = (TokenAuthentication,)
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = '__all__'
 
     def get_permissions(self):
         permission_classes = get_permissions_all(self)
@@ -154,6 +140,8 @@ class WorkHoursViewSet(viewsets.ModelViewSet):
     queryset = WorkHours.objects.all()
     serializer_class = WorkHoursSerializer
     authentication_classes = (TokenAuthentication,)
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = '__all__'
 
     def get_permissions(self):
         permission_classes = get_permissions_all(self)

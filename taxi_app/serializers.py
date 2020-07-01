@@ -68,6 +68,8 @@ class TaxiUserSerializer(serializers.ModelSerializer):
 
 
 class DriverSerializer(serializers.ModelSerializer):
+    work_status = serializers.CharField(required=True)
+
     class Meta:
         model = Driver
         fields = ['user',
@@ -114,10 +116,4 @@ class WorkHoursSerializer(serializers.ModelSerializer):
                   'duration',
                   'driver']
 
-    def save_session(work_hours_today, driver):
-        session = work_hours_today.get(driver=driver)
-        session.end_time = datetime.now(timezone.utc)
-        hours = session.end_time - session.start_time
-        hours = hours.total_seconds()
-        session.duration = hours/60
-        session.save()
+
