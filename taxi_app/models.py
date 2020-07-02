@@ -103,8 +103,9 @@ class Request(models.Model):
                 driver.change_status(next_status='in transit')
                 change_status = True
         elif curr_status == 'accepted' and next_status == 'complete':
-            end_session(self)
-            change_status = True
+            if self.driver == driver:
+                end_session(self)
+                change_status = True
             driver.change_status(next_status='seeking')
         if change_status:
             self.request_status = next_status
