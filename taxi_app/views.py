@@ -64,7 +64,7 @@ class RequestViewSet(viewsets.ModelViewSet):
             request_list = Request.objects.all()
         serializer = self.get_serializer(request_list, many=True)
         result_set = serializer.data
-        return Response(result_set)
+        return Response(result_set, status=status.HTTP_200_OK)
 
     def create(self, request, *args, **kwargs):
         if not (Request.objects.filter(request_status='new', client=request.user) or Request.objects.filter(
@@ -73,7 +73,8 @@ class RequestViewSet(viewsets.ModelViewSet):
             serializer = self.get_serializer(req)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         else:
-            return Response({'status': f'you cannot make multiple requests at the same time'}, status=status.HTTP_401_UNAUTHORIZED)
+            return Response({'status': f'you cannot make multiple requests at the same time'},
+                            status=status.HTTP_401_UNAUTHORIZED)
 
     @action(detail=True, methods=['put'])
     def change_status(self, request, pk=None, name='change request status', permission_classes=[IsDriver]):
@@ -85,9 +86,10 @@ class RequestViewSet(viewsets.ModelViewSet):
         driver = Driver.objects.get(user=request.user)
         change_status = req.change_request_status(request, curr_status, next_status, driver)
         if change_status:
-            return Response({'status': f'request has been changed from {curr_status} to {next_status}'})
+            return Response({'status': f'request has been changed from {curr_status} to {next_status}'},
+                            status=status.HTTP_200_OK)
         else:
-            return Response({'status': f'you cant change to this status'})
+            return Response({'status': f'you cant change to this status'}, status=status.HTTP_403_FORBIDDEN)
 
 
 class DriverViewSet(viewsets.ModelViewSet):
@@ -112,16 +114,17 @@ class DriverViewSet(viewsets.ModelViewSet):
         curr_status = driver.work_status
         change = driver.change_work_status(curr_status, next_status)
         if change:
-            return Response({'status': f'session updated from {curr_status} to {next_status}'})
+            return Response({'status': f'session updated from {curr_status} to {next_status}'},
+                            status=status.HTTP_200_OK)
         else:
-            return Response({'status': f'you cant change to this status'})
+            return Response({'status': f'you cant change to this status'}, status=status.HTTP_401_UNAUTHORIZED)
 
     @action(detail=True, methods=['get'])
     def work_hours(self, request, pk=None, name='get work hours', permission_classes=[IsDriver, IsLoggedUser]):
         work_hours = WorkHours.objects.filter(driver=Driver.objects.get(user=request.user))
         serializer = WorkHoursSerializer(work_hours, many=True)
         result_set = serializer.data
-        return Response(result_set)
+        return Response(result_set, status=status.HTTP_200_OK)
 
 
 class TaxiViewSet(viewsets.ModelViewSet):

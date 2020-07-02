@@ -1,8 +1,7 @@
 from rest_framework import serializers
 from taxi_app.models import *
 import re
-from datetime import datetime, timezone, timedelta
-from rest_framework.response import Response
+
 
 def get_user(self):
     user = None
