@@ -95,6 +95,10 @@ class Request(models.Model):
     def __str__(self):
         return f"requested by: {self.client} | status: {self.request_status} | duration: {self.duration} minutes"
 
+    def change_status(self, next_status):
+        self.request_status = next_status
+        self.save()
+
     def change_request_status(self, request, curr_status, next_status, driver):
         change_status = False
         if curr_status == 'new' and next_status == 'accepted':

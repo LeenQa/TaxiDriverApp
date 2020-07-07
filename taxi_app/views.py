@@ -1,12 +1,11 @@
 from rest_framework import viewsets, status
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.decorators import action
-import requests
 from .permissions import *
 from .serializers import *
 from datetime import datetime, timezone
 from rest_framework.response import Response
-from django_filters.rest_framework import DjangoFilterBackend
+#from django_filters.rest_framework import DjangoFilterBackend
 
 
 def get_permissions_all(self):
@@ -26,8 +25,8 @@ class TaxiUserViewSet(viewsets.ModelViewSet):
     queryset = TaxiUser.objects.all()
     serializer_class = TaxiUserSerializer
     authentication_classes = (TokenAuthentication,)
-    filter_backends = [DjangoFilterBackend]
-    filterset_fields = '__all__'
+    # filter_backends = [DjangoFilterBackend]
+    # filterset_fields = '__all__'
 
     def get_permissions(self):
         permission_classes = get_permissions_all(self)
@@ -42,8 +41,8 @@ class RequestViewSet(viewsets.ModelViewSet):
     queryset = Request.objects.all()
     serializer_class = RequestSerializer
     authentication_classes = (TokenAuthentication,)
-    filter_backends = [DjangoFilterBackend]
-    filterset_fields = '__all__'
+    # filter_backends = [DjangoFilterBackend]
+    # filterset_fields = '__all__'
 
     def get_permissions(self):
         permission_classes = []
@@ -74,7 +73,7 @@ class RequestViewSet(viewsets.ModelViewSet):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         else:
             return Response({'status': f'you cannot make multiple requests at the same time'},
-                            status=status.HTTP_401_UNAUTHORIZED)
+                            status=status.HTTP_403_FORBIDDEN)
 
     @action(detail=True, methods=['put'])
     def change_status(self, request, pk=None, name='change request status', permission_classes=[IsDriver]):
@@ -89,15 +88,15 @@ class RequestViewSet(viewsets.ModelViewSet):
             return Response({'status': f'request has been changed from {curr_status} to {next_status}'},
                             status=status.HTTP_200_OK)
         else:
-            return Response({'status': f'you cant change to this status'}, status=status.HTTP_403_FORBIDDEN)
+            return Response({'status': f'you cant change from {curr_status} to {next_status}'}, status=status.HTTP_403_FORBIDDEN)
 
 
 class DriverViewSet(viewsets.ModelViewSet):
     queryset = Driver.objects.all()
     serializer_class = DriverSerializer
     authentication_classes = (TokenAuthentication,)
-    filter_backends = [DjangoFilterBackend]
-    filterset_fields = '__all__'
+    # filter_backends = [DjangoFilterBackend]
+    # filterset_fields = '__all__'
 
     def get_permissions(self):
         permission_classes = get_permissions_all(self)
@@ -113,11 +112,14 @@ class DriverViewSet(viewsets.ModelViewSet):
         next_status = serializer.validated_data['work_status']
         curr_status = driver.work_status
         change = driver.change_work_status(curr_status, next_status)
-        if change:
-            return Response({'status': f'session updated from {curr_status} to {next_status}'},
-                            status=status.HTTP_200_OK)
+        if driver.user == request.user:
+            if change:
+                return Response({'status': f'session updated from {curr_status} to {next_status}'},
+                                status=status.HTTP_200_OK)
+            else:
+                return Response({'status': 'you cant change to this status'}, status=status.HTTP_401_UNAUTHORIZED)
         else:
-            return Response({'status': f'you cant change to this status'}, status=status.HTTP_401_UNAUTHORIZED)
+            return Response({'status': 'you can only update your own work status'}, status=status.HTTP_401_UNAUTHORIZED)
 
     @action(detail=True, methods=['get'])
     def work_hours(self, request, pk=None, name='get work hours', permission_classes=[IsDriver, IsLoggedUser]):
@@ -131,8 +133,8 @@ class TaxiViewSet(viewsets.ModelViewSet):
     queryset = Taxi.objects.all()
     serializer_class = TaxiSerializer
     authentication_classes = (TokenAuthentication,)
-    filter_backends = [DjangoFilterBackend]
-    filterset_fields = '__all__'
+    # filter_backends = [DjangoFilterBackend]
+    # filterset_fields = '__all__'
 
     def get_permissions(self):
         permission_classes = get_permissions_all(self)
@@ -143,8 +145,8 @@ class WorkHoursViewSet(viewsets.ModelViewSet):
     queryset = WorkHours.objects.all()
     serializer_class = WorkHoursSerializer
     authentication_classes = (TokenAuthentication,)
-    filter_backends = [DjangoFilterBackend]
-    filterset_fields = '__all__'
+    # filter_backends = [DjangoFilterBackend]
+    # filterset_fields = '__all__'
 
     def get_permissions(self):
         permission_classes = get_permissions_all(self)
