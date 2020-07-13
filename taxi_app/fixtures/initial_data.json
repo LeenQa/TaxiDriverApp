@@ -1,0 +1,336 @@
+[
+{
+    "model": "taxi_app.taxiuser",
+    "pk": 1,
+    "fields": {
+        "password": "pbkdf2_sha256$150000$iwaacXthQg5q$HhtnnFQyF2OGj6xKv6h+Dmmqq4M0r/LAbUh4K3Y6QTk=",
+        "last_login": "2020-07-05T17:51:08.602Z",
+        "is_superuser": true,
+        "username": "taxiadmin",
+        "email": "taxiadmin@mail.com",
+        "is_staff": true,
+        "is_active": true,
+        "date_joined": "2020-06-28T13:08:47Z",
+        "phone": null,
+        "address": null,
+        "user_type": "admin",
+        "first_name": "",
+        "last_name": "",
+        "groups": [],
+        "user_permissions": []
+    }
+},
+{
+    "model": "taxi_app.taxiuser",
+    "pk": 2,
+    "fields": {
+        "password": "pbkdf2_sha256$180000$irS0rkr38AzW$0eBCX8hURuzcP3b55K/yQIa8v9sPWLKSF8RhE1kGInU=",
+        "last_login": null,
+        "is_superuser": false,
+        "username": "leenclient",
+        "email": "thirddriver@mail.com",
+        "is_staff": false,
+        "is_active": true,
+        "date_joined": "2020-06-28T13:14:34.503Z",
+        "phone": 599988438,
+        "address": "Bethlehem",
+        "user_type": "client",
+        "first_name": "leen",
+        "last_name": "qaz",
+        "groups": [],
+        "user_permissions": []
+    }
+},
+{
+    "model": "taxi_app.taxiuser",
+    "pk": 3,
+    "fields": {
+        "password": "pbkdf2_sha256$180000$CEX1gOxRDwbm$Vtt0ZaQkSjD6y3z5i/C2wXSe425P2AlStthYTsqeMQQ=",
+        "last_login": null,
+        "is_superuser": false,
+        "username": "leendriver",
+        "email": "thirddriver@mail.com",
+        "is_staff": false,
+        "is_active": true,
+        "date_joined": "2020-06-28T13:14:52.766Z",
+        "phone": 599988438,
+        "address": "Bethlehem",
+        "user_type": "driver",
+        "first_name": "leen",
+        "last_name": "qaz",
+        "groups": [],
+        "user_permissions": []
+    }
+},
+{
+    "model": "taxi_app.taxiuser",
+    "pk": 4,
+    "fields": {
+        "password": "Pass@123",
+        "last_login": null,
+        "is_superuser": false,
+        "username": "client1",
+        "email": "thirddriv@mail.com",
+        "is_staff": false,
+        "is_active": true,
+        "date_joined": "2020-06-29T11:16:31.278Z",
+        "phone": 599988438,
+        "address": "Bethlehem",
+        "user_type": "client",
+        "first_name": "leen",
+        "last_name": "qaz",
+        "groups": [],
+        "user_permissions": []
+    }
+},
+{
+    "model": "taxi_app.taxiuser",
+    "pk": 5,
+    "fields": {
+        "password": "pbkdf2_sha256$180000$0hlj5gh0eho3$+yEm5H5wUyBv+WPvJFv7BcOTLZ+/er0vlR8F+P0O4Wg=",
+        "last_login": null,
+        "is_superuser": false,
+        "username": "client2",
+        "email": "thirddriv@mail.com",
+        "is_staff": false,
+        "is_active": true,
+        "date_joined": "2020-06-29T11:17:42.912Z",
+        "phone": 599988438,
+        "address": "Bethlehem",
+        "user_type": "client",
+        "first_name": "leen",
+        "last_name": "qaz",
+        "groups": [],
+        "user_permissions": []
+    }
+},
+{
+    "model": "taxi_app.taxiuser",
+    "pk": 6,
+    "fields": {
+        "password": "pbkdf2_sha256$180000$AlxCAiy7DWAo$gRdo6ulYg4o3dqMJU6HUPcJFWvW3xuOC02DZTAIQdBA=",
+        "last_login": null,
+        "is_superuser": false,
+        "username": "driver2",
+        "email": "thirddriv@mail.com",
+        "is_staff": false,
+        "is_active": true,
+        "date_joined": "2020-06-29T11:19:23.599Z",
+        "phone": 599988438,
+        "address": "Bethlehem",
+        "user_type": "driver",
+        "first_name": "leen",
+        "last_name": "qaz",
+        "groups": [],
+        "user_permissions": []
+    }
+},
+{
+    "model": "taxi_app.taxiuser",
+    "pk": 10,
+    "fields": {
+        "password": "pbkdf2_sha256$180000$keyMlN4Fx789$/qn/+5t7JM3L6cMZ3R/9XcSubjxEh6MZTWlsfJeg/ec=",
+        "last_login": null,
+        "is_superuser": false,
+        "username": "alexdriver",
+        "email": "driveremail@mail.com",
+        "is_staff": false,
+        "is_active": true,
+        "date_joined": "2020-06-30T13:08:40.621Z",
+        "phone": 298347,
+        "address": "Jerusalem",
+        "user_type": "driver",
+        "first_name": "alex",
+        "last_name": "duk",
+        "groups": [],
+        "user_permissions": []
+    }
+},
+{
+    "model": "taxi_app.driver",
+    "pk": 1,
+    "fields": {
+        "user": 3,
+        "work_status": "inactive"
+    }
+},
+{
+    "model": "taxi_app.driver",
+    "pk": 2,
+    "fields": {
+        "user": 6,
+        "work_status": "inactive"
+    }
+},
+{
+    "model": "taxi_app.driver",
+    "pk": 5,
+    "fields": {
+        "user": 10,
+        "work_status": "inactive"
+    }
+},
+{
+    "model": "taxi_app.taxi",
+    "pk": 1,
+    "fields": {
+        "car_model": "mercedes E200",
+        "num_of_passengers": 5,
+        "driver": 1
+    }
+},
+{
+    "model": "taxi_app.request",
+    "pk": 7,
+    "fields": {
+        "request_status": "complete",
+        "duration": 60,
+        "driver": 1,
+        "client": 2,
+        "start_time": "2020-06-30T07:48:47Z",
+        "end_time": "2020-06-30T08:50:15Z"
+    }
+},
+{
+    "model": "taxi_app.request",
+    "pk": 12,
+    "fields": {
+        "request_status": "complete",
+        "duration": 2,
+        "driver": 1,
+        "client": 4,
+        "start_time": "2020-07-01T06:30:40.632Z",
+        "end_time": "2020-07-01T06:32:52.091Z"
+    }
+},
+{
+    "model": "taxi_app.request",
+    "pk": 13,
+    "fields": {
+        "request_status": "complete",
+        "duration": 4,
+        "driver": 1,
+        "client": 2,
+        "start_time": "2020-07-01T08:45:53.268Z",
+        "end_time": "2020-07-01T08:50:33.293Z"
+    }
+},
+{
+    "model": "taxi_app.request",
+    "pk": 14,
+    "fields": {
+        "request_status": "complete",
+        "duration": 2,
+        "driver": 1,
+        "client": 2,
+        "start_time": "2020-07-01T12:11:24.360Z",
+        "end_time": "2020-07-01T12:14:06.674Z"
+    }
+},
+{
+    "model": "taxi_app.request",
+    "pk": 15,
+    "fields": {
+        "request_status": "new",
+        "duration": null,
+        "driver": null,
+        "client": 2,
+        "start_time": null,
+        "end_time": null
+    }
+},
+{
+    "model": "taxi_app.request",
+    "pk": 16,
+    "fields": {
+        "request_status": "new",
+        "duration": null,
+        "driver": null,
+        "client": 2,
+        "start_time": null,
+        "end_time": null
+    }
+},
+{
+    "model": "taxi_app.request",
+    "pk": 17,
+    "fields": {
+        "request_status": "new",
+        "duration": null,
+        "driver": null,
+        "client": 2,
+        "start_time": null,
+        "end_time": null
+    }
+},
+{
+    "model": "taxi_app.workhours",
+    "pk": 10,
+    "fields": {
+        "start_time": "2020-06-30T09:22:17.241Z",
+        "end_time": "2020-06-30T09:23:20.509Z",
+        "duration": 1,
+        "driver": 1
+    }
+},
+{
+    "model": "taxi_app.workhours",
+    "pk": 12,
+    "fields": {
+        "start_time": "2020-07-01T08:45:16.002Z",
+        "end_time": "2020-07-01T08:55:34.201Z",
+        "duration": 10,
+        "driver": 1
+    }
+},
+{
+    "model": "taxi_app.workhours",
+    "pk": 13,
+    "fields": {
+        "start_time": "2020-07-01T08:55:56.460Z",
+        "end_time": "2020-07-01T12:21:10.430Z",
+        "duration": 205,
+        "driver": 1
+    }
+},
+{
+    "model": "taxi_app.workhours",
+    "pk": 14,
+    "fields": {
+        "start_time": "2020-07-01T12:21:59.730Z",
+        "end_time": null,
+        "duration": null,
+        "driver": 1
+    }
+},
+{
+    "model": "taxi_app.workhours",
+    "pk": 15,
+    "fields": {
+        "start_time": "2020-07-06T20:31:08.257Z",
+        "end_time": "2020-07-06T20:37:16.692Z",
+        "duration": 6,
+        "driver": 2
+    }
+},
+{
+    "model": "taxi_app.workhours",
+    "pk": 16,
+    "fields": {
+        "start_time": "2020-07-06T20:36:57.864Z",
+        "end_time": "2020-07-06T20:37:11.096Z",
+        "duration": 0,
+        "driver": 1
+    }
+},
+{
+    "model": "taxi_app.workhours",
+    "pk": 17,
+    "fields": {
+        "start_time": "2020-07-06T20:37:49.239Z",
+        "end_time": "2020-07-06T20:54:51.762Z",
+        "duration": 17,
+        "driver": 2
+    }
+}
+]

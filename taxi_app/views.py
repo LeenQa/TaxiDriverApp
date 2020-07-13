@@ -88,7 +88,7 @@ class RequestViewSet(viewsets.ModelViewSet):
             return Response({'status': f'request has been changed from {curr_status} to {next_status}'},
                             status=status.HTTP_200_OK)
         else:
-            return Response({'status': f'you cant change from {curr_status} to {next_status}'}, status=status.HTTP_403_FORBIDDEN)
+            return Response({'status': f'you cant change to this status'}, status=status.HTTP_403_FORBIDDEN)
 
 
 class DriverViewSet(viewsets.ModelViewSet):
