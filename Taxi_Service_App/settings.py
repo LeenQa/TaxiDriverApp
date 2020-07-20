@@ -29,6 +29,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+   # 'django_extensions',
     'rest_framework',
     'rest_framework.authtoken',
     'taxi_app.apps.TaxiAppConfig',
@@ -41,7 +42,7 @@ INSTALLED_APPS = [
 ]
 
 FIXTURE_DIRS = (
-   r'C:\Users\User\PycharmProjects\TaxiDriverApp\taxi_app\fixtures',
+   r'TaxiDriverApp/taxi_app/fixtures',
 )
 
 REST_FRAMEWORK = {
