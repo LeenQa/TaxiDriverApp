@@ -8,12 +8,12 @@ pipeline {
         }
         stage ('build'){
             steps {
-        sh 'PATH=$PATH:/usr/local/bin/python --version'
+        sh 'PATH=$PATH:/usr/local/bin python --version'
             }
          }
         stage ('test') {
             steps {
-		sh 'PATH=$PATH:/usr/local/bin/python manage.py jenkins --enable-coverage'
+		sh 'PATH=$PATH:/usr/local/bin python manage.py jenkins --enable-coverage'
             }
             post {
                 always {
