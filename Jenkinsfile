@@ -3,7 +3,7 @@ pipeline {
     stages {
         stage('Preparation') {
             steps {
-                git 'https://github.com/LeenQa/TaxiDriverApp'
+                git 'https://github.com/LeenQa/TaxiDriverApp.git'
             }
         }
         stage ('build'){

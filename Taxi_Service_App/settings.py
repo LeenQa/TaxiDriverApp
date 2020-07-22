@@ -46,12 +46,6 @@ PROJECT_APPS = (
 'taxi_app'
 )
 
-JENKINS_TASKS = (
-    'django_jenkins.tasks.run_pep8',
-    'django_jenkins.tasks.run_pyflakes',
-    'django_jenkins.tasks.run_csslint',
-    'django_jenkins.tasks.run_sloccount'
-)
 FIXTURE_DIRS = (
    r'TaxiDriverApp/taxi_app/fixtures',
 )
