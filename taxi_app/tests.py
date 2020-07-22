@@ -1,8 +1,6 @@
-from django.http import HttpResponseRedirect
 from rest_framework import status
 from rest_framework.test import APITestCase
 from .models import *
-from .urls import *
 from django.urls import reverse
 
 
