@@ -30,6 +30,7 @@ ALLOWED_HOSTS = []
 
 INSTALLED_APPS = [
    # 'django_extensions',
+    'django_jenkins',
     'rest_framework',
     'rest_framework.authtoken',
     'taxi_app.apps.TaxiAppConfig',
@@ -41,6 +42,16 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 ]
 
+PROJECT_APPS = (
+'taxi_app'
+)
+
+JENKINS_TASKS = (
+    'django_jenkins.tasks.run_pep8',
+    'django_jenkins.tasks.run_pyflakes',
+    'django_jenkins.tasks.run_csslint',
+    'django_jenkins.tasks.run_sloccount'
+)
 FIXTURE_DIRS = (
    r'TaxiDriverApp/taxi_app/fixtures',
 )
