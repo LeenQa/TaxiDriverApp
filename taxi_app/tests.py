@@ -235,7 +235,7 @@ class RequestTest(AuthTestCase):
 class TaxiTests(AuthTestCase):
 
     def test_add_taxi_success(self):
-        # check adding new taxi by admin
+        # check adding taxi by admin
         admin = TaxiUser.objects.get(id=1)
         self.login(username=admin.username, password='Pass@123')
         response = self.client.post(f'http://127.0.0.1:8000/taxiapp/taxis/', data={"car_model": "mercedes E200",
