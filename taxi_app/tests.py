@@ -242,13 +242,13 @@ class TaxiTests(AuthTestCase):
                                                                                    "num_of_passengers": 5,
                                                                                    "driver": 2})
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-
-    def test_get_taxi(self):
-        # check adding new taxi by admin
-        admin = TaxiUser.objects.get(id=1)
-        self.login(username=admin.username, password='Pass@123')
-        response = self.client.get(reverse('taxi_app:taxi-detail', args=[1]))
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+    #
+    # def test_get_taxi(self):
+    #     # check adding new taxi by admin
+    #     admin = TaxiUser.objects.get(id=1)
+    #     self.login(username=admin.username, password='Pass@123')
+    #     response = self.client.get(reverse('taxi_app:taxi-detail', args=[1]))
+    #     self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_one_driver_one_taxi(self):
         admin = TaxiUser.objects.get(id=1)
