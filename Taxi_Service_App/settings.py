@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/3.0/ref/settings/
 
 import os
 
+
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -109,11 +110,11 @@ ALLOWED_HOSTS = ['127.0.0.1']
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': os.environ['MYSQL_DATABASE'],
-        'USER':  os.environ['MYSQL_USER'],
-        'PASSWORD': os.environ['MYSQL_PASSWORD'],
-        'HOST': 'db',
-        'PORT': 3306,
+        'NAME': "db",
+        'USER':  "root",
+        'PASSWORD': "",
+        'HOST': 'localhost',
+        'PORT': 3308,
     }
 }
 
