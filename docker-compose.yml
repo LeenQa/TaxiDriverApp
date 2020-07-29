@@ -1,26 +1,29 @@
 version: '3'
 
 services:
+
   db:
     image: mysql:5.7.21
+    restart: always
     command: --default-authentication-plugin=mysql_native_password
     environment:
        MYSQL_ROOT_PASSWORD: docker
        MYSQL_DATABASE: docker
-       MYSQL_USER: docker
-       MYSQL_PASSWORD: docker
+    volumes:
+      - mysql-data:/var/lib/mysql
     ports:
       - '3306:3306'
 
   web:
-    build: 
+    build:
        context: .
        dockerfile: Dockerfile
     command: python manage.py runserver 0.0.0.0:8000
     environment:
        MYSQL_DATABASE: docker
-       MYSQL_USER: docker
+       MYSQL_USER: root
        MYSQL_PASSWORD: docker
+       MYSQL_HOST: docker
     volumes:
       - .:/code
     ports:

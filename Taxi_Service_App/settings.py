@@ -110,11 +110,11 @@ ALLOWED_HOSTS = ['127.0.0.1']
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': "db",
-        'USER':  "root",
-        'PASSWORD': "",
-        'HOST': 'localhost',
-        'PORT': 3308,
+        'NAME': 'docker',
+        'USER': 'docker',
+        'PASSWORD': 'docker',
+        'HOST': 'db',
+        'PORT': 3306,
     }
 }
 
