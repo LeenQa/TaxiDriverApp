@@ -111,7 +111,7 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'docker',
-        'USER': 'docker',
+        'USER': 'root',
         'PASSWORD': 'docker',
         'HOST': 'db',
         'PORT': 3306,

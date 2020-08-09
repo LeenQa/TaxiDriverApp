@@ -16,11 +16,29 @@ services:
     expose:
       - "3306"
 
+
+  jenkins:
+    image: jenkins/jenkins:lts
+    privileged: true
+    user: root
+    ports:
+      - 8081:8080
+      - 50000:50000
+    container_name: jenkins
+    volumes:
+      - ~/jenkins:/var/jenkins_home
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /usr/local/bin/docker:/usr/local/bin/docker
+
   web:
     build:
        context: .
        dockerfile: Dockerfile
-    command: python manage.py runserver 0.0.0.0:8000
+#    command: python manage.py migrate && python manage.py runserver 0.0.0.0:8000
+    command: |
+      sh -c 'python manage.py makemigrations && \
+                     python manage.py migrate && \
+                     python manage.py runserver 0.0.0.0:8000'
     restart: always
     environment:
        MYSQL_DATABASE: docker
@@ -33,3 +51,8 @@ services:
       - "8000:8000"
     depends_on:
       - db
+#
+#   command: |
+#       sh -c 'python manage.py makemigrations && \
+#               python manage.py migrate && \
+#               python manage.py runserver 0.0.0.0:8888'

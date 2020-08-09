@@ -1,0 +1,10 @@
+curl https://bootstrap.pypa.io/get-pip.py --output get-pip.py
+python get-pip.py
+pip install virtualenv
+virtualenv -p python myenv
+. myenv/bin/activate
+python -m pip install -r requirements.txt
+cd reports
+touch *.xml
+touch *.report
+cd ..

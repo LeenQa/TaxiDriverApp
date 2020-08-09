@@ -36,8 +36,8 @@ class Driver(models.Model):
     user = models.ForeignKey(Taxi_Service_App.settings.AUTH_USER_MODEL, on_delete=models.CASCADE, default=1)
     work_status = models.CharField(max_length=50, choices=STATUS, default='inactive')
 
-    def __str__(self):
-        return f"name: {self.user.username} | status: {self.work_status}"
+    # def __str__(self):
+    #     return f"name: {self.user.username} | status: {self.work_status}"
 
     def create_driver(user):
         driver = Driver()
