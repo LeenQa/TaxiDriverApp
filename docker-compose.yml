@@ -10,20 +10,17 @@ services:
       - ./db:/var/lib/mysql
     environment:
        MYSQL_ROOT_PASSWORD: docker
-       MYSQL_DATABASE: docker
+       MYSQL_DATABASE: db
     ports:
-      - '3308:3308'
+      - '3306:3306'
     expose:
-      - "3308"
+      - "3306"
 
 
   jenkins:
     image: jenkins/jenkins:lts
     privileged: true
     user: root
-    command: |
-      sh -c 'apt-get update && \
-                     apt install python3'
     ports:
       - 8081:8080
       - 50000:50000
@@ -44,18 +41,13 @@ services:
                      python manage.py runserver 0.0.0.0:8000'
     restart: always
     environment:
-       MYSQL_DATABASE: docker
+       MYSQL_DATABASE: db
        MYSQL_USER: root
        MYSQL_PASSWORD: docker
-       MYSQL_HOST: docker
+       MYSQL_HOST: localhost
     volumes:
       - .:/code
     ports:
       - "8000:8000"
     depends_on:
       - db
-#
-#   command: |
-#       sh -c 'python manage.py makemigrations && \
-#               python manage.py migrate && \
-#               python manage.py runserver 0.0.0.0:8888'

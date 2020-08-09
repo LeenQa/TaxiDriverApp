@@ -72,7 +72,7 @@ class RequestViewSet(viewsets.ModelViewSet):
             serializer = self.get_serializer(req)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         else:
-            return Response({'status': f'you cannot make multiple requests at the same time'},
+            return Response({'status': 'you cannot make multiple requests at the same time'},
                             status=status.HTTP_403_FORBIDDEN)
 
     @action(detail=True, methods=['put'])
@@ -85,10 +85,10 @@ class RequestViewSet(viewsets.ModelViewSet):
         driver = Driver.objects.get(user=request.user)
         change_status = req.change_request_status(request, curr_status, next_status, driver)
         if change_status:
-            return Response({'status': f'request has been changed from {curr_status} to {next_status}'},
+            return Response({'status': 'request has been changed from {} to {}'.format(curr_status, next_status)},
                             status=status.HTTP_200_OK)
         else:
-            return Response({'status': f'you cant change to this status'}, status=status.HTTP_403_FORBIDDEN)
+            return Response({'status': 'you cant change to this status'}, status=status.HTTP_403_FORBIDDEN)
 
 
 class DriverViewSet(viewsets.ModelViewSet):
@@ -114,7 +114,7 @@ class DriverViewSet(viewsets.ModelViewSet):
         change = driver.change_work_status(curr_status, next_status)
         if driver.user == request.user:
             if change:
-                return Response({'status': f'session updated from {curr_status} to {next_status}'},
+                return Response({'status': 'session updated from {} to {}'.format(curr_status, next_status)},
                                 status=status.HTTP_200_OK)
             else:
                 return Response({'status': 'you cant change to this status'}, status=status.HTTP_401_UNAUTHORIZED)
