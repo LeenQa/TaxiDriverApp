@@ -114,7 +114,7 @@ DATABASES = {
         'USER': 'root',
         'PASSWORD': 'docker',
         'HOST': 'db',
-        'PORT': 3306,
+        'PORT': 3308,
     }
 }
 

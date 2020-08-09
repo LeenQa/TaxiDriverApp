@@ -74,9 +74,9 @@ class Taxi(models.Model):
     car_model = models.CharField(max_length=250)
     num_of_passengers = models.IntegerField()
     driver = models.OneToOneField(Driver, on_delete=models.CASCADE)
-
-    def __str__(self):
-        return f"taxi {self.id} | driver: {self.driver}"
+    #
+    # def __str__(self):
+    #     return f"taxi {self.id} | driver: {self.driver}"
 
 
 class Request(models.Model):
@@ -92,8 +92,8 @@ class Request(models.Model):
     start_time = models.DateTimeField(null=True)
     end_time = models.DateTimeField(null=True)
 
-    def __str__(self):
-        return f"requested by: {self.client} | status: {self.request_status} | duration: {self.duration} minutes"
+    # def __str__(self):
+    #     return f"requested by: {self.client} | status: {self.request_status} | duration: {self.duration} minutes"
 
     def change_status(self, next_status):
         self.request_status = next_status
@@ -124,9 +124,9 @@ class WorkHours(models.Model):
     end_time = models.DateTimeField(null=True)
     duration = models.IntegerField(null=True)
     driver = models.ForeignKey(Driver, on_delete=models.CASCADE)
-
-    def __str__(self):
-        return f"driver: {self.driver} | start time: {self.start_time} | end time: {self.end_time} | duration: {self.duration}"
+    #
+    # def __str__(self):
+    #     return f"driver: {self.driver} | start time: {self.start_time} | end time: {self.end_time} | duration: {self.duration}"
 
 
 @receiver(post_save, sender=Taxi_Service_App.settings.AUTH_USER_MODEL)
