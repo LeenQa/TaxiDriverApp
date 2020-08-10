@@ -260,11 +260,3 @@ class TaxiTests(AuthTestCase):
         self.assertEqual(response.json()['driver'], ['This field must be unique.'])
 
 
-    def test_add_taxi_fail(self):
-        driver = TaxiUser.objects.get(id=3)
-        self.login(username=driver.username, password='Pass@123')
-        response = self.client.post('http://127.0.0.1:8000/taxiapp/taxis/', data={"car_model": "mercedes E200",
-                                                                                   "num_of_passengers": 5,
-                                                                                   "driver": 1})
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-        self.assertEqual(response.json()['detail'], 'Only admin can perform this action.')
