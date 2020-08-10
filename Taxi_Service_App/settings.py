@@ -105,7 +105,7 @@ WSGI_APPLICATION = 'Taxi_Service_App.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
-ALLOWED_HOSTS = ['127.0.0.1']
+ALLOWED_HOSTS = [r'127.0.0.1']
 
 DATABASES = {
     'default': {
@@ -113,7 +113,7 @@ DATABASES = {
         'NAME': 'docker',
         'USER': 'root',
         'PASSWORD': 'docker',
-        'HOST': '127.0.0.1',
+        'HOST': 'db',
         'PORT': 3308,
     }
 }

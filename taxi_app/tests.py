@@ -97,7 +97,7 @@ class DriverTest(AuthTestCase):
         # check changing status for another driver
         driver = Driver.objects.get(id=1)
         driver.change_status(next_status='inactive')
-        response = self.client.put('http://127.0.0.1:8000/taxiapp/drivers/{}/change_status/'.format(driver.id),
+        response = self.client.put('http://127.0.0.1:8000/taxiapp/drivers/2/change_status/',
                                    data={'work_status': 'seeking'})
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
         self.assertEqual(response.json()['status'], self.unauthorized_message)
