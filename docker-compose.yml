@@ -14,27 +14,10 @@ services:
     ports:
       - '3306:3308'
 
-
-  jenkins:
-    image: jenkins/jenkins:lts
-    privileged: true
-    user: root
-    ports:
-      - 8081:8080
-      - 50000:50000
-    container_name: jenkins
-    volumes:
-      - ~/jenkins:/var/jenkins_home
-      - /var/run/docker.sock:/var/run/docker.sock
-      - /usr/local/bin/docker:/usr/local/bin/docker
-    depends_on:
-      - db
-
   web:
     build:
        context: .
        dockerfile: Dockerfile
-#    command: python manage.py migrate && python manage.py runserver 0.0.0.0:8000
     command: |
       sh -c 'python manage.py makemigrations && \
                      python manage.py migrate && \
@@ -52,3 +35,22 @@ services:
       - "8000:8000"
     depends_on:
       - db
+
+  jenkins:
+    image: jenkins/jenkins:lts
+    privileged: true
+    user: root
+    ports:
+      - 8081:8080
+      - 50000:50000
+    container_name: jenkins
+    volumes:
+      - ~/jenkins:/var/jenkins_home
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /usr/local/bin/docker:/usr/local/bin/docker
+      - ".:/app:rw"
+      - "./data:/data:rw"
+    depends_on:
+      - db
+      - web
+
